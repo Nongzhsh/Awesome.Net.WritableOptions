@@ -34,7 +34,7 @@ namespace Awesome.Net.WritableOptions.ConsoleTestApp
 
             if(!File.Exists(appConfigJsonPath))
             {
-                JsonFileHelper.AddOrUpdateSection(nameof(AppSettings), appConfigJsonPath, new AppSettings());
+                JsonFileHelper.AddOrUpdateSection(appConfigJsonPath, nameof(AppSettings), new AppSettings());
             }
 
             var builder = new ConfigurationBuilder()
