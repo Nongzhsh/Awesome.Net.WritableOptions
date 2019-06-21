@@ -51,6 +51,8 @@ public class JsonFileHelper
     public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, Action<T> updateAction = null) where T : class, new();
 
     public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, T value);
+
+    public static bool TryGet<T>(string jsonFilePath, string sectionName, out T value);
 }
 ```
 
@@ -67,4 +69,22 @@ JsonFileHelper.AddOrUpdateSection<MyOptions>(jsonFilePath: _jsonFilePath, sectio
     opt.Field1 = "value1";
     opt.Field2 = "value2";
 });
+```
+
+#### `TryGet`
+
+```c#
+if(JsonFileHelper.TryGet(jsonFilePath, sectionName, out MyOptions value))
+{
+    ...
+}
+```
+
+or
+
+```c#
+if(JsonFileHelper.TryGet<MyOptions>(jsonFilePath, sectionName, out var value))
+{
+    ...
+}
 ```
