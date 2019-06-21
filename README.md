@@ -1,15 +1,12 @@
+# Usage
 
-# How to use?
+## Install-Package
 
+```pm
+Install-Package Awesome.Net.WritableOptions
+```
 
-## Installation
-
-````cmd
-dotnet add package Awesome.Net.WritableOptions
-````
-
-
-## Configuration
+## Configure writable options
 
 ```c#
 services.ConfigureWritableOptions<MyOptions>(Configuration.GetSection("MySection"));
@@ -21,7 +18,7 @@ or use custom json file
 services.ConfigureWritableOptions<MyOptions>(Configuration.GetSection("MySection"),"Resources/appsettings.custom.json");
 ```
 
-## Usage
+## Update option values into json file
 
 ```c#
 private readonly IWritableOptions<MyOptions> _options;
@@ -39,13 +36,12 @@ _options.Update(opt => {
 });
 ```
 
-
 See more:
 [``How to update values into appsetting.json?``](https://stackoverflow.com/a/45986656)
 
+# Others
 
-
-# JsonFileHelper
+## JsonFileHelper
 
 ### Methods
 
@@ -58,14 +54,13 @@ public class JsonFileHelper
 }
 ```
 
-
-## Usage
+### `AddOrUpdateSection`
 
 ```c#
 JsonFileHelper.AddOrUpdateSection(jsonFilePath: _jsonFilePath, sectionName: _sectionName, value: true);
 ```
 
-or 
+or
 
 ```c#
 JsonFileHelper.AddOrUpdateSection<MyOptions>(jsonFilePath: _jsonFilePath, sectionName: _sectionName, opt => {
