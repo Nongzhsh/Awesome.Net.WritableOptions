@@ -56,7 +56,14 @@ namespace Awesome.Net.WritableOptions.Extensions
                 var jObject = JsonConvert.DeserializeObject<JObject>(jsonContent);
                 if(jObject.TryGetValue(sectionName, out var sectionValue))
                 {
-                    value = JsonConvert.DeserializeObject<T>(sectionValue.ToString());
+                    if(typeof(T) == typeof(string) || typeof(T).IsValueType)
+                    {
+                        value = sectionValue.Value<T>();
+                    }
+                    else
+                    {
+                        value = JsonConvert.DeserializeObject<T>(sectionValue.ToString());
+                    }
                     return true;
                 }
             }
@@ -68,7 +75,11 @@ namespace Awesome.Net.WritableOptions.Extensions
         {
             if(!File.Exists(jsonFilePath))
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(jsonFilePath) ?? throw new InvalidOperationException());
+                var fileDirectoryPath = Path.GetDirectoryName(jsonFilePath);
+                if(!string.IsNullOrEmpty(fileDirectoryPath))
+                {
+                    Directory.CreateDirectory(fileDirectoryPath);
+                }
 
                 File.WriteAllText(jsonFilePath, "{}");
             }
