@@ -1,12 +1,13 @@
 <Project>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
-    <Version>1.2.0</Version>
+    <Version>1.3.0</Version>
+    <Authors>Nongzhsh</Authors>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <PackageProjectUrl>https://github.com/Nognzhsh/Awesome.Net.WritableOptions/</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/Nognzhsh/Awesome.Net.WritableOptions/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/Nongzhsh/Awesome.Net.WritableOptions/</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/Nongzhsh/Awesome.Net.WritableOptions/LICENSE</PackageLicenseUrl>
     <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/Nognzhsh/Awesome.Net.WritableOptions/</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Nongzhsh/Awesome.Net.WritableOptions/</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
