@@ -39,11 +39,11 @@ _options.Update(opt => {
 See more:
 [``How to update values into appsetting.json?``](https://stackoverflow.com/a/45986656)
 
-# Others
+## Others
 
-## JsonFileHelper
+### JsonFileHelper
 
-### Methods
+#### Methods
 
 ```c#
 public class JsonFileHelper
@@ -54,7 +54,7 @@ public class JsonFileHelper
 }
 ```
 
-### `AddOrUpdateSection`
+#### `AddOrUpdateSection`
 
 ```c#
 JsonFileHelper.AddOrUpdateSection(jsonFilePath: _jsonFilePath, sectionName: _sectionName, value: true);
