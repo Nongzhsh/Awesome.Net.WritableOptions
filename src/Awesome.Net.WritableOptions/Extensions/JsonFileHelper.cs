@@ -47,6 +47,22 @@ namespace Awesome.Net.WritableOptions.Extensions
             File.WriteAllText(jsonFilePath, JsonConvert.SerializeObject(jObject, Formatting.Indented));
         }
 
+        public static bool TryGet<T>(string jsonFilePath, string sectionName, out T value)
+        {
+            value = default;
+            if(File.Exists(jsonFilePath))
+            {
+                var jsonContent = File.ReadAllText(jsonFilePath);
+                var jObject = JsonConvert.DeserializeObject<JObject>(jsonContent);
+                if(jObject.TryGetValue(sectionName, out var sectionValue))
+                {
+                    value = JsonConvert.DeserializeObject<T>(sectionValue.ToString());
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         private static void CreateJsonFile(string jsonFilePath)
         {
