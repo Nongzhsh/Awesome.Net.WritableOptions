@@ -13,6 +13,7 @@ namespace Awesome.Net.WritableOptions.ConsoleTestApp
     public class Program
     {
         public static readonly string EnvironmentName = Environment.GetEnvironmentVariable("NETCORE_ENVIRONMENT");
+        public static readonly string BasePath = Directory.GetCurrentDirectory();
 
         static void Main()
         {
@@ -30,7 +31,7 @@ namespace Awesome.Net.WritableOptions.ConsoleTestApp
         {
             const string appConfigJsonName = "appsettings.json";
 
-            var appConfigJsonPath = Path.Combine(Directory.GetCurrentDirectory(), appConfigJsonName);
+            var appConfigJsonPath = Path.Combine(BasePath, appConfigJsonName);
 
             if(!File.Exists(appConfigJsonPath))
             {
@@ -38,7 +39,7 @@ namespace Awesome.Net.WritableOptions.ConsoleTestApp
             }
 
             var builder = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
+                .SetBasePath(BasePath)
                 .AddJsonFile(appConfigJsonName)
                 .AddJsonFile("Resources/appsettings.custom.json", true)
                 .AddEnvironmentVariables();
