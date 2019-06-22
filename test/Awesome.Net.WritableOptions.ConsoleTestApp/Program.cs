@@ -18,6 +18,8 @@ namespace Awesome.Net.WritableOptions.ConsoleTestApp
         static void Main()
         {
             var config = BuildConfiguration();
+            ConfigureConsole(config);
+
             var services = new ServiceCollection();
             ConfigureServices(services, config);
 
@@ -33,7 +35,7 @@ namespace Awesome.Net.WritableOptions.ConsoleTestApp
 
             var appConfigJsonPath = Path.Combine(BasePath, appConfigJsonName);
 
-            if(!File.Exists(appConfigJsonPath))
+            if (!File.Exists(appConfigJsonPath))
             {
                 JsonFileHelper.AddOrUpdateSection(appConfigJsonPath, nameof(AppSettings), new AppSettings());
             }
@@ -44,12 +46,12 @@ namespace Awesome.Net.WritableOptions.ConsoleTestApp
                 .AddJsonFile("Resources/appsettings.custom.json", true)
                 .AddEnvironmentVariables();
 
-            if(!string.IsNullOrEmpty(EnvironmentName))
+            if (!string.IsNullOrEmpty(EnvironmentName))
             {
                 builder.AddJsonFile($"appsettings.{EnvironmentName}.json", true);
             }
 
-            if(IsDevelopment())
+            if (IsDevelopment())
             {
                 builder.AddUserSecrets<Program>();
             }
@@ -58,7 +60,7 @@ namespace Awesome.Net.WritableOptions.ConsoleTestApp
 
         private static bool IsDevelopment()
         {
-            if(string.IsNullOrEmpty(EnvironmentName))
+            if (string.IsNullOrEmpty(EnvironmentName))
             {
                 return true;
             }
@@ -77,8 +79,6 @@ namespace Awesome.Net.WritableOptions.ConsoleTestApp
             services.AddOptions();
 
             services.ConfigureWritableOptions<AppSettings>(config.GetSection(nameof(AppSettings)), "Resources/appsettings.custom.json");
-
-            ConfigureConsole(config);
 
             services.AddTransient<ITestService, TestService>();
             services.AddTransient<App>();
