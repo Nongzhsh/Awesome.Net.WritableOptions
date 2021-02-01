@@ -1,50 +1,58 @@
 ﻿using System;
 using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
 namespace Awesome.Net.WritableOptions.Extensions
 {
-    public class JsonFileHelper
+    public static class JsonFileHelper
     {
         public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, Action<T> updateAction = null)
             where T : class, new()
         {
-            CreateJsonFile(jsonFilePath);
+            var updatedValue = TryGet<T>(jsonFilePath, sectionName, out var value) ? value : new T();
 
-            var jsonContent = File.ReadAllText(jsonFilePath);
+            updateAction?.Invoke(updatedValue);
 
-            var jObject = JsonConvert.DeserializeObject<JObject>(jsonContent);
-
-            var sectionObject = jObject.TryGetValue(sectionName, out var sectionValue)
-                ? JsonConvert.DeserializeObject<T>(sectionValue.ToString())
-                : (new T());
-
-            updateAction?.Invoke(sectionObject);
-
-            jObject[sectionName] = JObject.Parse(JsonConvert.SerializeObject(sectionObject));
-
-            File.WriteAllText(jsonFilePath, JsonConvert.SerializeObject(jObject, Formatting.Indented));
+            AddOrUpdateSection(jsonFilePath, sectionName, updatedValue);
         }
 
         public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, T value)
         {
-            CreateJsonFile(jsonFilePath);
+            var jsonContent = ReadOrCreateJsonFile(jsonFilePath);
+            var jsonDocument = JsonDocument.Parse(jsonContent);
 
-            var jsonContent = File.ReadAllText(jsonFilePath);
-
-            var jObject = JsonConvert.DeserializeObject<JObject>(jsonContent);
-
-            if(typeof(T) == typeof(string) || typeof(T).IsValueType)
+            using(var stream = File.OpenWrite(jsonFilePath))
             {
-                jObject[sectionName] = new JValue(value);
-            }
-            else
-            {
-                jObject[sectionName] = JObject.Parse(JsonConvert.SerializeObject(value));
-            }
+                var writer = new Utf8JsonWriter(stream, new JsonWriterOptions()
+                {
+                    Indented = true,
+                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+                });
 
-            File.WriteAllText(jsonFilePath, JsonConvert.SerializeObject(jObject, Formatting.Indented));
+                writer.WriteStartObject();
+                bool isWritten = false;
+                var optionsElement = JsonDocument.Parse(JsonSerializer.SerializeToUtf8Bytes(value));
+                foreach(var element in jsonDocument.RootElement.EnumerateObject())
+                {
+                    if(element.Name != sectionName)
+                    {
+                        element.WriteTo(writer);
+                        continue;
+                    }
+                    writer.WritePropertyName(element.Name);
+                    optionsElement.WriteTo(writer);
+                    isWritten = true;
+                }
+                if(!isWritten)
+                {
+                    writer.WritePropertyName(sectionName);
+                    optionsElement.WriteTo(writer);
+                }
+                writer.WriteEndObject();
+                writer.Flush();
+                stream.SetLength(stream.Position);
+            }
         }
 
         public static bool TryGet<T>(string jsonFilePath, string sectionName, out T value)
@@ -52,26 +60,19 @@ namespace Awesome.Net.WritableOptions.Extensions
             value = default;
             if(File.Exists(jsonFilePath))
             {
-                var jsonContent = File.ReadAllText(jsonFilePath);
-                var jObject = JsonConvert.DeserializeObject<JObject>(jsonContent);
-                if(jObject.TryGetValue(sectionName, out var sectionValue))
+                var jsonContent = File.ReadAllBytes(jsonFilePath);
+                var jsonDocument = JsonDocument.Parse(jsonContent);
+
+                if(jsonDocument.RootElement.TryGetProperty(sectionName, out var sectionValue))
                 {
-                    if(typeof(T) == typeof(string) || typeof(T).IsValueType)
-                    {
-                        value = sectionValue.Value<T>();
-                    }
-                    else
-                    {
-                        value = JsonConvert.DeserializeObject<T>(sectionValue.ToString());
-                    }
+                    value = JsonSerializer.Deserialize<T>(sectionValue.ToString());
                     return true;
                 }
             }
-
             return false;
         }
 
-        private static void CreateJsonFile(string jsonFilePath)
+        private static byte[] ReadOrCreateJsonFile(string jsonFilePath)
         {
             if(!File.Exists(jsonFilePath))
             {
@@ -83,6 +84,7 @@ namespace Awesome.Net.WritableOptions.Extensions
 
                 File.WriteAllText(jsonFilePath, "{}");
             }
+            return File.ReadAllBytes(jsonFilePath);
         }
     }
 }
