@@ -27,7 +27,6 @@ namespace Awesome.Net.WritableOptions
             _configuration = configuration;
         }
 
-
         public void Update(Action<T> updateAction, bool reload = true)
         {
             JsonFileHelper.AddOrUpdateSection(_jsonFilePath, _sectionName, updateAction);
