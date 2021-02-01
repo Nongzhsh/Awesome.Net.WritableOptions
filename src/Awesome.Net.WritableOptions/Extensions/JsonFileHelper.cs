@@ -20,8 +20,8 @@ namespace Awesome.Net.WritableOptions.Extensions
         public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, T value)
         {
             var jsonContent = ReadOrCreateJsonFile(jsonFilePath);
-            var jsonDocument = JsonDocument.Parse(jsonContent);
 
+            using(var jsonDocument = JsonDocument.Parse(jsonContent))
             using(var stream = File.OpenWrite(jsonFilePath))
             {
                 var writer = new Utf8JsonWriter(stream, new JsonWriterOptions()
@@ -61,12 +61,14 @@ namespace Awesome.Net.WritableOptions.Extensions
             if(File.Exists(jsonFilePath))
             {
                 var jsonContent = File.ReadAllBytes(jsonFilePath);
-                var jsonDocument = JsonDocument.Parse(jsonContent);
 
-                if(jsonDocument.RootElement.TryGetProperty(sectionName, out var sectionValue))
+                using(var jsonDocument = JsonDocument.Parse(jsonContent))
                 {
-                    value = JsonSerializer.Deserialize<T>(sectionValue.ToString());
-                    return true;
+                    if(jsonDocument.RootElement.TryGetProperty(sectionName, out var sectionValue))
+                    {
+                        value = JsonSerializer.Deserialize<T>(sectionValue.ToString());
+                        return true;
+                    }
                 }
             }
             return false;
