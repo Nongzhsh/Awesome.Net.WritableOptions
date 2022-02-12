@@ -78,7 +78,7 @@ namespace Awesome.Net.WritableOptions.ConsoleTestApp
 
             services.AddOptions();
 
-            services.ConfigureWritableOptions<AppSettings>(config.GetSection(nameof(AppSettings)), "Resources/appsettings.custom.json");
+            services.ConfigureWritableOptions<AppSettings>(config, nameof(AppSettings), "Resources/appsettings.custom.json");
 
             services.AddTransient<ITestService, TestService>();
             services.AddTransient<App>();

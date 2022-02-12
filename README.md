@@ -9,13 +9,13 @@ Install-Package Awesome.Net.WritableOptions
 ## Configure writable options
 
 ```c#
-services.ConfigureWritableOptions<MyOptions>(Configuration.GetSection("MySection"));
+services.ConfigureWritableOptions<MyOptions>(configurationRoot, "MySectionName");
 ```
 
 or use custom json file
 
 ```c#
-services.ConfigureWritableOptions<MyOptions>(Configuration.GetSection("MySection"),"Resources/appsettings.custom.json");
+services.ConfigureWritableOptions<MyOptions>(configurationRoot, "MySectionName", "Resources/appsettings.custom.json");
 ```
 
 ## Update option values into json file

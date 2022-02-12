@@ -11,10 +11,11 @@ namespace Awesome.Net.WritableOptions.Extensions
     {
         public static void ConfigureWritableOptions<T>(
             this IServiceCollection services,
-            IConfigurationSection section,
+            IConfigurationRoot configuration,
+            string sectionName,
             string subPathOfFile = "appsettings.json") where T : class, new()
         {
-            services.Configure<T>(section);
+            services.Configure<T>(configuration.GetSection(sectionName));
             services.AddTransient<IWritableOptions<T>>(provider =>
             {
                 string jsonFilePath;
@@ -32,9 +33,8 @@ namespace Awesome.Net.WritableOptions.Extensions
                 }
 
                 var options = provider.GetService<IOptionsMonitor<T>>();
-                var configuration = provider.GetService<IConfigurationRoot>();
 
-                return new WritableOptions<T>(jsonFilePath, section.Key, options, configuration);
+                return new WritableOptions<T>(jsonFilePath, sectionName, options, configuration);
             });
         }
     }

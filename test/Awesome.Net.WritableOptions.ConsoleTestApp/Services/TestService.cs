@@ -32,7 +32,7 @@ namespace Awesome.Net.WritableOptions.ConsoleTestApp.Services
                 }
             });
 
-            _logger.LogError($"Updated LogLevel: {_options.Value.MinLevel}");
+            _logger.LogWarning($"Updated LogLevel: {_options.Value.MinLevel}");
         }
     }
 }
