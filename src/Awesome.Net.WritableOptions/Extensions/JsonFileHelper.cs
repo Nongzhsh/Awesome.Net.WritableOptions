@@ -31,7 +31,7 @@ namespace Awesome.Net.WritableOptions.Extensions
                 });
 
                 writer.WriteStartObject();
-                bool isWritten = false;
+                var isWritten = false;
                 var optionsElement = JsonDocument.Parse(JsonSerializer.SerializeToUtf8Bytes(value));
                 foreach(var element in jsonDocument.RootElement.EnumerateObject())
                 {
