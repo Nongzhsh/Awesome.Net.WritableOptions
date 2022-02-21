@@ -2,23 +2,35 @@
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Awesome.Net.WritableOptions.Extensions
 {
     public static class JsonFileHelper
     {
-        public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, Action<T> updateAction = null)
+        public static Func<JsonSerializerOptions> DefaultSerializerOptions = new Func<JsonSerializerOptions>(() => {
+            return new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                Converters = { new JsonStringEnumConverter() }
+            };
+        });
+
+        public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, Action<T> updateAction = null, JsonSerializerOptions serializerOptions = null)
             where T : class, new()
         {
-            var updatedValue = TryGet<T>(jsonFilePath, sectionName, out var value) ? value : new T();
+            if(serializerOptions == null) serializerOptions = DefaultSerializerOptions();
+            var updatedValue = TryGet<T>(jsonFilePath, sectionName, out var value, serializerOptions) ? value : new T();
 
             updateAction?.Invoke(updatedValue);
 
-            AddOrUpdateSection(jsonFilePath, sectionName, updatedValue);
+            AddOrUpdateSection(jsonFilePath, sectionName, updatedValue, serializerOptions);
         }
 
-        public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, T value)
+        public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, T value, JsonSerializerOptions serializerOptions = null)
         {
+            if(serializerOptions == null) serializerOptions = DefaultSerializerOptions();
             var jsonContent = ReadOrCreateJsonFile(jsonFilePath);
 
             using(var jsonDocument = JsonDocument.Parse(jsonContent))
@@ -32,7 +44,7 @@ namespace Awesome.Net.WritableOptions.Extensions
 
                 writer.WriteStartObject();
                 var isWritten = false;
-                var optionsElement = JsonDocument.Parse(JsonSerializer.SerializeToUtf8Bytes(value));
+                var optionsElement = JsonDocument.Parse(JsonSerializer.SerializeToUtf8Bytes(value, serializerOptions));
                 foreach(var element in jsonDocument.RootElement.EnumerateObject())
                 {
                     if(element.Name != sectionName)
@@ -55,9 +67,8 @@ namespace Awesome.Net.WritableOptions.Extensions
             }
         }
 
-        public static bool TryGet<T>(string jsonFilePath, string sectionName, out T value)
+        public static bool TryGet<T>(string jsonFilePath, string sectionName, out T value, JsonSerializerOptions serializerOptions = null)
         {
-            value = default;
             if(File.Exists(jsonFilePath))
             {
                 var jsonContent = File.ReadAllBytes(jsonFilePath);
@@ -66,11 +77,14 @@ namespace Awesome.Net.WritableOptions.Extensions
                 {
                     if(jsonDocument.RootElement.TryGetProperty(sectionName, out var sectionValue))
                     {
-                        value = JsonSerializer.Deserialize<T>(sectionValue.ToString());
+                        if(serializerOptions == null) serializerOptions = DefaultSerializerOptions();
+                        value = JsonSerializer.Deserialize<T>(sectionValue.ToString(), serializerOptions);
                         return true;
                     }
                 }
             }
+
+            value = default;
             return false;
         }
 
