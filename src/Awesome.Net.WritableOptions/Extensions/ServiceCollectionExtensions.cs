@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,7 +14,8 @@ namespace Awesome.Net.WritableOptions.Extensions
             this IServiceCollection services,
             IConfigurationRoot configuration,
             string sectionName,
-            string subPathOfFile = "appsettings.json") where T : class, new()
+            string subPathOfFile = "appsettings.json",
+            Func<JsonSerializerOptions> defaultSerializerOptions = null) where T : class, new()
         {
             services.Configure<T>(configuration.GetSection(sectionName));
             services.AddTransient<IWritableOptions<T>>(provider =>
@@ -34,7 +36,7 @@ namespace Awesome.Net.WritableOptions.Extensions
 
                 var options = provider.GetService<IOptionsMonitor<T>>();
 
-                return new WritableOptions<T>(jsonFilePath, sectionName, options, configuration);
+                return new WritableOptions<T>(jsonFilePath, sectionName, options, configuration, defaultSerializerOptions);
             });
         }
     }
