@@ -22,7 +22,11 @@ namespace Awesome.Net.WritableOptions.Extensions
             {
                 string jsonFilePath;
 
+#if NETSTANDARD2_1
+                var environment = provider.GetService<Microsoft.Extensions.Hosting.IHostEnvironment>();
+#else
                 var environment = provider.GetService<IHostingEnvironment>();
+#endif
                 if(environment != null)
                 {
                     var fileProvider = environment.ContentRootFileProvider;
