@@ -1,26 +1,46 @@
-# Usage
+# Awesome.Net.WritableOptions
 
-## Install-Package
+Use to update option values into json file
 
-```pm
+## Usage
+
+### Install-Package
+
+```powershell
 Install-Package Awesome.Net.WritableOptions
 ```
 
-## Configure writable options
+### Configure writable options
 
-```c#
+Let's start with the simplest configuration
+
+```csharp
 services.ConfigureWritableOptions<MyOptions>(configurationRoot, "MySectionName");
 ```
 
 or use custom json file
 
-```c#
+```csharp
 services.ConfigureWritableOptions<MyOptions>(configurationRoot, "MySectionName", "Resources/appsettings.custom.json");
+```
+
+or use custom json serializer options
+
+```csharp
+services.ConfigureWritableOptions<MyOptions>(
+    configurationRoot, 
+    "MySectionName", 
+    defaultSerializerOptions: new JsonSerializerOptions
+    {
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Converters = { new JsonStringEnumConverter() }
+    });
 ```
 
 ## Update option values into json file
 
-```c#
+```csharp
 private readonly IWritableOptions<MyOptions> _options;
 
 public MyClass(IWritableOptions<MyOptions> options)
@@ -29,11 +49,35 @@ public MyClass(IWritableOptions<MyOptions> options)
 }
 ```
 
-```c#
+```csharp
 _options.Update(opt => {
     opt.Field1 = "value1";
     opt.Field2 = "value2";
 });
+```
+
+No Reload
+
+```csharp
+_options.Update(opt => {
+    opt.Field1 = "value1";
+    opt.Field2 = "value2";
+}, false);
+```
+
+If a certain configuration, specific json serialization options need to be used.
+
+```csharp
+var customSerializerOptions = new JsonSerializerOptions
+{
+    WriteIndented = true,
+    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    Converters = { new JsonStringEnumConverter() }
+};
+_options.Update(opt => {
+    opt.Field1 = "value1";
+    opt.Field2 = "value2";
+}, serializerOptions: customSerializerOptions);
 ```
 
 See more:
@@ -45,45 +89,84 @@ See more:
 
 #### Methods
 
-```c#
+```csharp
 public class JsonFileHelper
 {
-    public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, Action<T> updateAction = null) where T : class, new();
+    public static Func<JsonSerializerOptions> DefaultSerializerOptions;
 
-    public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, T value);
+    public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, Action<T> updateAction = null, JsonSerializerOptions serializerOptions = null) where T : class, new();
 
-    public static bool TryGet<T>(string jsonFilePath, string sectionName, out T value);
+    public static void AddOrUpdateSection<T>(string jsonFilePath, string sectionName, T value, JsonSerializerOptions serializerOptions = null);
+
+    public static bool TryGet<T>(string jsonFilePath, string sectionName, out T value, JsonSerializerOptions serializerOptions = null);
 }
 ```
 
 #### `AddOrUpdateSection`
 
-```c#
-JsonFileHelper.AddOrUpdateSection(jsonFilePath: _jsonFilePath, sectionName: _sectionName, value: true);
+Use the default JSON serialization option update some configuration items
+
+```csharp
+JsonFileHelper.AddOrUpdateSection(
+    jsonFilePath: "appsettings.json", 
+    sectionName: "MySectionName", 
+    value: new MyOptions {
+        opt.Field1 = "value1";
+        opt.Field2 = "value2";
+    });
 ```
 
-or
+Or use the default JSON serialization option update the configuration section
 
-```c#
-JsonFileHelper.AddOrUpdateSection<MyOptions>(jsonFilePath: _jsonFilePath, sectionName: _sectionName, opt => {
-    opt.Field1 = "value1";
-    opt.Field2 = "value2";
-});
+```csharp
+JsonFileHelper.AddOrUpdateSection<MyOptions>(
+    jsonFilePath: "Resources/appsettings.custom.json", 
+    sectionName: "MySectionName", 
+    updateAction: opt => {
+        opt.Field1 = "value1";
+        opt.Field2 = "value2";
+    });
+```
+
+Or use the custom JSON serialization option update the configuration section
+
+```csharp
+JsonFileHelper.AddOrUpdateSection<MyOptions>(
+    jsonFilePath: "Resources/appsettings.custom.json", 
+    sectionName: "MySectionName", 
+    updateAction: opt => {
+        opt.Field1 = "value1";
+        opt.Field2 = "value2";
+    },
+    serializerOptions: new JsonSerializerOptions
+    {
+        WriteIndented = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        Converters = { new JsonStringEnumConverter() }
+    });
 ```
 
 #### `TryGet`
 
-```c#
+Use the default JSON serialization options
+
+```csharp
 if(JsonFileHelper.TryGet(jsonFilePath, sectionName, out MyOptions value))
 {
     ...
 }
 ```
 
-or
+Or use the custom JSON serialization options
 
-```c#
-if(JsonFileHelper.TryGet<MyOptions>(jsonFilePath, sectionName, out var value))
+```csharp
+var customSerializerOptions = new JsonSerializerOptions
+{
+    WriteIndented = true,
+    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+    Converters = { new JsonStringEnumConverter() }
+};
+if(JsonFileHelper.TryGet(jsonFilePath, sectionName, out MyOptions value, customSerializerOptions))
 {
     ...
 }
